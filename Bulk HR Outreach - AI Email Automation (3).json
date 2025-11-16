@@ -1,0 +1,469 @@
+{
+  "name": "Bulk HR Outreach - AI Email Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a660e40a-afdf-4107-9f8a-72b21b65a68d",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w",
+          "mode": "list",
+          "cachedResultName": "Copy of HR_Emails_Sample",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "9cbc3a59-db19-45fa-b5f5-705cd32b3b5d",
+      "name": "Google Sheets - Read Pending",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5LFkE5b2jI62xBiB",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "8b777508-68ca-4947-9d37-71e41f279a77",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "filePath": "/files/ViswanathResume.pdf"
+      },
+      "id": "73511cde-5b8a-4aba-bd9f-782372a41e8d",
+      "name": "Read Binary File (Resume)",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -160
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "aiResult",
+              "value": "=JSON.parse({{ $json.output }})"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0e1c9fca-443d-4455-977e-8f98af37d873",
+      "name": "Set - Parse AI Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "seconds"
+      },
+      "id": "3bbb9fd7-a95c-4b91-92d3-01041442b871",
+      "name": "Wait 10s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        208
+      ],
+      "webhookId": "fd7ad838-4f45-4c61-b39f-8278aa4467da"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w",
+          "mode": "list",
+          "cachedResultName": "Copy of HR_Emails_Sample",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fEtWPlTxHkgcbjaXaQqDIHp7u8NbFKGE8gaOBNtLq9w/edit#gid=0"
+        },
+        "columnToMatchOn": "Email",
+        "valueToMatchOn": "={{ $('Google Sheets - Read Pending').item.json.Email }}",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "status",
+              "fieldValue": "=drafted "
+            },
+            {
+              "column": "date",
+              "fieldValue": "={{ new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f393aac7-fb3b-432c-bcd4-237a91685af7",
+      "name": "Update Sheet (Mark Sent)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        368
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5LFkE5b2jI62xBiB",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a concise and professional outreach assistant. Generate a short, polished cold email (6–8 sentences) from Viswanath M to an HR or recruiter about job or internship opportunities.\n\nSTRICT RULES\n\n1. If a company name exists, include it naturally in both the subject and the body.\n2. If a role exists, tailor the message toward that role.\n3. Never invent details about the company, role, people, or industry.\n4. Use ONLY plain text with double newlines between paragraphs.\n5. Do NOT include closings like “Sincerely,” or “Regards.” Signature is added later.\n6. No markdown, no bold, no asterisks, no backticks.\n7. Output strictly valid JSON:\n\n{\n  \"subject\": \"final subject line\",\n  \"body\": \"clean email body with correct paragraph spacing\"\n}\n\nDYNAMIC INPUTS  \nCompany Name: {{ $('Split In Batches').item.json['Company Name'] || '' }}  \nRole: {{ $('Split In Batches').item.json['Role'] || '' }}\n\nSUBJECT LOGIC  \n- If Company Name exists → “Inquiry Regarding Opportunities at {Company Name}”  \n- Else if Role exists → “Inquiry Regarding {Role} Opportunities”  \n- Else → “Inquiry Regarding Job / Internship Opportunities”\n\nEMAIL BODY RULES\n\n- Start with: “Dear HR,”\n\n- First paragraph:  \n  Introduce Viswanath M (final-year B.Tech CSE).  \n  Express interest.  \n  Mention Company Name if available.\n\n- Second paragraph (short):  \n  “I came across your organization while exploring opportunities and was impressed by the work your team is doing. I believe my background in full-stack development, Generative AI, NLP, and automation aligns well with your ongoing initiatives.”\n\n- Third paragraph (closing):  \n  “I would appreciate the opportunity to connect and learn whether there might be a suitable opening for my profile.”\n\n- Maintain double newlines between all paragraphs.\n- IMPORTANT: Do NOT mention StockLens anywhere in the main email body.\n\nMANDATORY PROFILE SUMMARY\n\nAfter the main body (with a double newline), add EXACTLY this block:\n\nHere’s a quick overview of my profile:\n- Final-year B.Tech CSE student at VIT-AP University.\n- Strong skills in full-stack development, Generative AI, NLP, and automation using n8n.\n- Notable project: StockLens — an AI-powered stock analysis SDK integrating market data and sentiment insights.\n\nRULES FOR SUMMARY\n- Exactly these 3 bullets.\n- No extra bullets.\n- No markdown.\n- No repeating StockLens anywhere else.\n- Must always appear on a new line, separated by a blank line.\n\nFINAL OUTPUT MUST BE ONLY:\n\n{\n  \"subject\": \"...\",\n  \"body\": \"...\"\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        -384
+      ],
+      "id": "8d344e24-d3e6-4b1e-8cc5-498889171cfc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -192
+      ],
+      "id": "cf86cf20-8a39-48a3-b044-dfdb1e49b687",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        16
+      ],
+      "id": "d982f308-0f6a-4000-9223-8ed3f102c5d6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZnuJB5uIPcgC4IB8",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ---------------------------------------------\n// 1. RAW EXTRACT\n// ---------------------------------------------\nlet raw = $json.data || $json.text || $json.output || \"\";\nraw = raw.toString().trim();\n\n// ---------------------------------------------\n// 2. CLEAN MARKDOWN / HTML / ESCAPES\n// ---------------------------------------------\nlet cleaned = raw\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .replace(/^JSON\\.parse\\(/, \"\")\n  .replace(/\\);?$/, \"\")\n  .replace(/\\\\\"/g, '\"')\n  .replace(/<[^>]+>/g, \"\") // remove all HTML tags\n  .replace(/\\\\n/g, \"\\n\")\n  .replace(/\\\\t/g, \" \")\n  .trim();\n\n// ---------------------------------------------\n// 3. EXTRACT subject + body\n// ---------------------------------------------\nlet subject = \"\";\nlet body = \"\";\n\ntry {\n  const parsed = JSON.parse(cleaned);\n  subject = parsed.subject || \"\";\n  body = parsed.body || \"\";\n} catch (e) {\n  const subjectMatch = cleaned.match(/\"subject\"\\s*:\\s*\"([^\"]+)\"/i);\n  const bodyMatch = cleaned.match(/\"body\"\\s*:\\s*\"([\\s\\S]+?)\"\\s*[},]/i);\n\n  if (subjectMatch) subject = subjectMatch[1];\n  if (bodyMatch) body = bodyMatch[1];\n}\n\nif (!subject) subject = \"Untitled\";\nif (!body) body = cleaned;\n\n// ---------------------------------------------\n// 4. BODY NORMALIZATION\n// ---------------------------------------------\nbody = body\n  .replace(/B\\.\\s*Tech/gi, \"B.Tech\")\n  .replace(/github\\.\\s*com/gi, \"github.com\")\n  .replace(/ +\\n/g, \"\\n\")\n  .replace(/\\n{3,}/g, \"\\n\\n\")\n  .trim();\n\n// ---------------------------------------------\n// 5. SIGNATURE (NO blank line after Best regards)\n// ---------------------------------------------\nconst signature =\n  \"Best regards,\\n\" +               // ← NO EXTRA NEWLINE HERE\n  \"Viswanath M\\n\" +\n  \"GitHub: https://github.com/Viswanath322\\n\" +\n  \"Phone: +91 7306457475\";\n\n// Ensure exactly one blank line BEFORE signature\nconst finalBody = `${body}\\n\\n${signature}`.trim();\n\n// ---------------------------------------------\n// 6. HTML BODY\n// ---------------------------------------------\nconst htmlBody = finalBody\n  .replace(/\\bStockLens\\b/g, \"<strong>StockLens</strong>\")\n  .split(/\\n{2}/)\n  .map(p => `<p style=\"margin:8px 0; white-space:pre-line; line-height:1.6;\">${p}</p>`)\n  .join(\"\");\n\n// ---------------------------------------------\n// 7. RETURN\n// ---------------------------------------------\nreturn [\n  {\n    json: {\n      subject: subject.trim(),\n      body: finalBody.trim(),\n      htmlBody\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -368
+      ],
+      "id": "f6c60fbc-706e-4477-9e55-42de10f70adb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1872,
+        -240
+      ],
+      "id": "810ec6da-394c-4784-8445-feff60318a23",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.htmlBody }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "=data"
+              }
+            ]
+          },
+          "sendTo": "={{ $('Split In Batches').item.json.Email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2208,
+        -224
+      ],
+      "id": "ec0e42f2-5d6f-42b0-8ebc-bd43b0b1f127",
+      "name": "Create a draft",
+      "webhookId": "c9266059-8023-4de2-b8fd-06087618b9c2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xlR1hVbQLkrIboQL",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        224
+      ],
+      "id": "6d317f96-4f06-4cd2-90af-b700dd311fac",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets - Read Pending": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Read Binary File (Resume)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet (Mark Sent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary File (Resume)": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Set - Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Sheet (Mark Sent)": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        [
+          {
+            "node": "Wait 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Read Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ad736a5c-014f-4316-a238-d1303e04f721",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8a0f567413196cdb52a5a00b33caf72cc9a8dac87308159fedba289f58c29c62"
+  },
+  "id": "18UCeCzVJzbhPdBv",
+  "tags": []
+}
